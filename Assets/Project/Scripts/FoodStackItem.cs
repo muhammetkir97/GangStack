@@ -150,6 +150,7 @@ public class FoodStackItem : MonoBehaviour
             }
             else if(colliderName.Contains("Oven"))
             {
+                targetObject.GetComponent<PlayerController>().ObstacleHit(stackOrder+1,col.GetContact(0).point);
                 targetObject.GetComponent<PlayerController>().RemoveFromStack(stackOrder-1,RemoveType.Finish,Vector3.zero);
                 GameSystem.Instance.AddPlate(foodLevel);
             }

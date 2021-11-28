@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         SetCharacterModel();
-        StartCharacter();
+        //StartCharacter();
     }
 
     void StartCharacter()
@@ -30,7 +30,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.S)) AddToStack(FoodType.Food1,0);
+        if(Input.GetKeyDown(KeyCode.S) && !isStarted) StartCharacter();
     }
 
     void FixedUpdate()
@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour
     void Move()
     {
         transform.Translate(Vector3.forward * Time.deltaTime * 10,Space.World);
-        transform.Translate(Vector3.right * Input.GetAxis("Horizontal")* Time.deltaTime * 10,Space.World);
+        transform.Translate(Vector3.right * Input.GetAxis("Horizontal")* Time.deltaTime * 15,Space.World);
     }
 
     public void AddToStack(FoodType foodType, int level)
