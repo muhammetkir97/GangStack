@@ -93,6 +93,9 @@ public class PlayerController : MonoBehaviour
             case RemoveType.Finish:
                 stackItem.FinishEffect();
                 break;
+            case RemoveType.Oven:
+                stackItem.OvenEffect();
+                break;
 
         }
      
@@ -118,6 +121,7 @@ public class PlayerController : MonoBehaviour
     {
         if(col.transform.name.Contains("Finish"))
         {
+            transform.position = new Vector3(0,transform.position.y,transform.position.z); 
             isFinished = true;
             GameSystem.Instance.Finish();
             playerAnimator.SetTrigger("Dance");

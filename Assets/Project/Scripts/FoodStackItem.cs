@@ -151,7 +151,7 @@ public class FoodStackItem : MonoBehaviour
             else if(colliderName.Contains("Oven"))
             {
                 targetObject.GetComponent<PlayerController>().ObstacleHit(stackOrder+1,col.GetContact(0).point);
-                targetObject.GetComponent<PlayerController>().RemoveFromStack(stackOrder-1,RemoveType.Finish,Vector3.zero);
+                targetObject.GetComponent<PlayerController>().RemoveFromStack(stackOrder-1,RemoveType.Oven,Vector3.zero);
                 GameSystem.Instance.AddPlate(foodLevel);
             }
 
@@ -208,6 +208,15 @@ public class FoodStackItem : MonoBehaviour
     }
 
     public void FinishEffect()
+    {
+        transform.GetChild(foodLevel).GetChild(0).gameObject.SetActive(false);
+        transform.GetChild(foodLevel).GetChild(1).gameObject.SetActive(true);
+        iTween.MoveTo(gameObject, transform.position + (Vector3.right * 15),1.5f);
+        isMove = false;
+        //Destroy(gameObject);
+    }
+
+    public void OvenEffect()
     {
         Destroy(gameObject);
     }

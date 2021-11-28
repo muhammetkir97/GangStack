@@ -14,7 +14,8 @@ public enum RemoveType
 {
     Destroy,
     Drop,
-    Finish
+    Finish,
+    Oven
 }
 
 [System.Serializable]
