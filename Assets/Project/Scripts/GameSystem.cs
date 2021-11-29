@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-
+using TMPro;
 public enum FoodType
 {
     Food1,
@@ -36,6 +36,7 @@ public class GameSystem : MonoBehaviour
     [SerializeField] private GameObject gateObject;
     [SerializeField] private Transform startObject;
     [SerializeField] private Transform finishObject;
+    [SerializeField] private Transform finishScoreMultiplierParent;
     private int[] collectedPlates = {0,0,0};
 
     void Awake()
@@ -43,6 +44,8 @@ public class GameSystem : MonoBehaviour
         Application.targetFrameRate = 30;
         Instance = this;
     }
+
+    
     void Start()
     {
         //InvokeRepeating("SpawnFood",0,Globals.GetSpawnRate());
@@ -90,10 +93,14 @@ public class GameSystem : MonoBehaviour
         {
             startObject.position = objPos;
 
+
         }
         else if(objName == "finish")
         {
             finishObject.position = objPos;
+            finishScoreMultiplierParent.position = objPos + (Vector3.forward * 10f);
+            CreateFinishBoard();
+
         }
         else if(objName.Contains("o"))
         {
@@ -122,6 +129,23 @@ public class GameSystem : MonoBehaviour
             }
 
             cloneGate.transform.SetParent(mapParent);
+        }
+    }
+
+    void CreateFinishBoard()
+    {
+        GameObject boardObject = finishScoreMultiplierParent.GetChild(0).gameObject;
+        int boardCount = Globals.GetFinishScoreBoardCount();
+        float boardScore = 1.1f;
+        for(int i=0; i<boardCount; i++)
+        {
+            Vector3 pos = new Vector3(0,2 * (i+1),0);
+            GameObject clone = Instantiate(boardObject,finishScoreMultiplierParent);
+            clone.transform.localPosition = pos;
+            string boardText = boardScore.ToString("#.#") + " X";
+            boardText = boardText.Replace(',','.');
+            clone.transform.GetChild(1).GetComponent<TextMeshPro>().text = boardText;
+            boardScore += 0.1f;
         }
     }
 
@@ -161,17 +185,32 @@ public class GameSystem : MonoBehaviour
 
     public void Finish()
     {
+        iTween.MoveBy(Camera.main.gameObject,iTween.Hash("amount", Vector3.forward * -5,"time", 5f,"islocal",true));
         StartCoroutine(FinishEffect());
     }
 
     IEnumerator FinishEffect()
     {
+        float totalPlayerHeight = Globals.GetPlateSize() / 2;
         int totalPlate = 0;
+        int lastSelectedBoard = 0;
+        iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2)).gameObject,Vector3.forward * -1f,0.3f);
+        player.transform.position += new Vector3(0,Globals.GetPlateSize(),0) / 2;
         for(int plate=0; plate<3; plate++)
         {
             for(int i=0; i<collectedPlates[plate]; i++)
             {
                 player.transform.position += new Vector3(0,Globals.GetPlateSize(),0);
+                totalPlayerHeight += Globals.GetPlateSize();
+
+                int newBoard = Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2);
+                if(newBoard != lastSelectedBoard)
+                {
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1f,0.3f);
+                    lastSelectedBoard = newBoard;
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1f,0.3f);
+                }
+
                 Vector3 platePos = player.transform.position;
                 platePos.y = totalPlate * Globals.GetPlateSize();
                 GameObject clonePlate = Instantiate(plateObjects[plate],platePos,plateObjects[plate].transform.rotation);
@@ -181,7 +220,7 @@ public class GameSystem : MonoBehaviour
                 
 
             }
-            player.transform.position += new Vector3(0,Globals.GetPlateSize(),0) / 2;
+            //player.transform.position += new Vector3(0,Globals.GetPlateSize(),0) / 2;
         }
     }
 

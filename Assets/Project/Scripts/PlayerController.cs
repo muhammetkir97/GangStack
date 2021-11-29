@@ -126,7 +126,18 @@ public class PlayerController : MonoBehaviour
             GameSystem.Instance.Finish();
             playerAnimator.SetTrigger("Dance");
             
-            playerModelParent.rotation = Quaternion.Euler(0,-180,0);
+            StartCoroutine(RotateCharacter());
+            //playerModelParent.rotation = Quaternion.Euler(0,-180,0);
+        }
+    }
+
+    IEnumerator RotateCharacter()
+    {
+        Quaternion charRotation = Quaternion.Euler(0,-180,0);
+        while(playerModelParent.rotation != charRotation)
+        {
+            playerModelParent.rotation = Quaternion.Lerp(playerModelParent.rotation,charRotation,Time.deltaTime * 2f);
+            yield return new WaitForEndOfFrame();
         }
     }
 

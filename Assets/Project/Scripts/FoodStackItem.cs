@@ -211,7 +211,7 @@ public class FoodStackItem : MonoBehaviour
     {
         transform.GetChild(foodLevel).GetChild(0).gameObject.SetActive(false);
         transform.GetChild(foodLevel).GetChild(1).gameObject.SetActive(true);
-        iTween.MoveTo(gameObject, transform.position + (Vector3.right * 15),1.5f);
+        iTween.MoveTo(gameObject, iTween.Hash("position",transform.position + (Vector3.right * 15),"time",2.0f,"easetype",iTween.EaseType.linear));
         isMove = false;
         //Destroy(gameObject);
     }

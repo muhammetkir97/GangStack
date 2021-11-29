@@ -14,6 +14,7 @@ public static class Globals
     private static float plateSize = 0.5f;
     private static float currentLevel = 0;
     private static int currentCharacterModel = 0; 
+    private static int finishScoreBoardCount = 50;
 
 
 
@@ -60,5 +61,10 @@ public static class Globals
     public static int GetCurrentCharacterModel()
     {
         return currentCharacterModel;
+    }
+
+    public static int GetFinishScoreBoardCount()
+    {
+        return finishScoreBoardCount;
     }
 }
