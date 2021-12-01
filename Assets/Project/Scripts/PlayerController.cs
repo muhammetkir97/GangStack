@@ -8,20 +8,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator playerAnimator;
     [SerializeField] private Transform playerModelParent;
     [SerializeField] private Transform playerHatParent;
+    [SerializeField] private DragZone dragZone;
     private List<Transform> stackTransforms = new List<Transform>();
 
     int currentStackCount = 0;
     bool isFinished = false;
     bool isStarted = false;
 
+    float targetX = 0;
+
 
     void Start()
     {
+        dragZone.OnDragAction += HorizontalMove;
         SetCharacterModel();
         //StartCharacter();
     }
 
-    void StartCharacter()
+    public void StartCharacter()
     {
         playerAnimator.SetTrigger("Walk");
         isStarted = true;
@@ -30,7 +34,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.S) && !isStarted) StartCharacter();
+        //if(Input.GetKeyDown(KeyCode.S) && !isStarted) StartCharacter();
     }
 
     void FixedUpdate()
@@ -41,7 +45,25 @@ public class PlayerController : MonoBehaviour
     void Move()
     {
         transform.Translate(Vector3.forward * Time.deltaTime * 10,Space.World);
-        transform.Translate(Vector3.right * Input.GetAxis("Horizontal")* Time.deltaTime * 15,Space.World);
+        Vector3 targetPos = transform.position;
+        targetPos.x = targetX;
+        transform.position = Vector3.Lerp(transform.position, targetPos,Time.deltaTime * 3);
+        //transform.Translate(Vector3.right * Input.GetAxis("Horizontal")* Time.deltaTime * 15,Space.World);
+        
+    }
+
+    void HorizontalMove()
+    {
+        targetX += dragZone.GetDragDelta().x / 50f;
+        if(targetX > 4) targetX = 4;
+        if(targetX < -4) targetX = -4;
+
+        /*
+        if(!isFinished && isStarted)
+        {
+            transform.Translate(Vector3.right * dragZone.GetDragDelta().x * Time.deltaTime * 0.1f,Space.World);
+        }
+        */
     }
 
     public void AddToStack(FoodType foodType, int level)

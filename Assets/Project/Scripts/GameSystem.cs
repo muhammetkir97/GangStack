@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
 public enum FoodType
 {
     Food1,
@@ -31,13 +34,31 @@ public class GameSystem : MonoBehaviour
     [SerializeField] private FoodValues[] foodValues;
     [SerializeField] private GameObject[] plateObjects;
     [SerializeField] private PlayerController player;
+    [SerializeField] private DragZone dragZone;
+    
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI txtLevel;
+    [SerializeField] private TextMeshProUGUI txtScore;
+    [SerializeField] private Button btnPause;
+    [SerializeField] private GameObject fingerIcon;
+
+
+    
+    
+
+    [Header("Map Objects")]
     [SerializeField] private Transform mapParent;
-    [SerializeField] private GameObject obstacleObject;
-    [SerializeField] private GameObject gateObject;
     [SerializeField] private Transform startObject;
     [SerializeField] private Transform finishObject;
+    [SerializeField] private GameObject obstacleObject;
+    [SerializeField] private GameObject gateObject;
+
+    [Header("Finish Score Board")]
     [SerializeField] private Transform finishScoreMultiplierParent;
-    private int[] collectedPlates = {0,0,0};
+    [SerializeField] private Color[] gradientColors;
+
+    private int collectedPlates = 0;
+    private bool isStarted = false;
 
     void Awake()
     {
@@ -50,12 +71,26 @@ public class GameSystem : MonoBehaviour
     {
         //InvokeRepeating("SpawnFood",0,Globals.GetSpawnRate());
         CreateLevel();
+
+        btnPause.onClick.AddListener(clickPuaseGame);
+        txtLevel.text = $"Level {(Globals.GetCurrentLevel() + 1).ToString()}";
+        iTween.MoveBy(fingerIcon,iTween.Hash("amount",Vector3.right * 50,"time", 1f, "easetype", iTween.EaseType.linear,"looptype",iTween.LoopType.pingPong));
+
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(!isStarted && dragZone.GetDragDelta().magnitude > 0) StartGame();
+    }
+
+    void StartGame()
+    {
+        isStarted = true;
+        iTween.Stop(fingerIcon);
+        iTween.ScaleTo(fingerIcon,Vector3.zero,0.3f);
+        player.StartCharacter();
     }
 
     void CreateLevel()
@@ -142,9 +177,10 @@ public class GameSystem : MonoBehaviour
             Vector3 pos = new Vector3(0,2 * (i+1),0);
             GameObject clone = Instantiate(boardObject,finishScoreMultiplierParent);
             clone.transform.localPosition = pos;
-            string boardText = boardScore.ToString("#.#") + " X";
+            string boardText = string.Format("{0:0.0}", boardScore) + " X";
             boardText = boardText.Replace(',','.');
             clone.transform.GetChild(1).GetComponent<TextMeshPro>().text = boardText;
+
             boardScore += 0.1f;
         }
     }
@@ -180,49 +216,102 @@ public class GameSystem : MonoBehaviour
 
     public void AddPlate(int level)
     {
-        collectedPlates[level]++;
+        //collectedPlates += level+1;
+        collectedPlates += 1;
+        txtScore.text = collectedPlates.ToString();
     }
 
     public void Finish()
     {
-        iTween.MoveBy(Camera.main.gameObject,iTween.Hash("amount", Vector3.forward * -5,"time", 5f,"islocal",true));
+        //iTween.MoveBy(Camera.main.transform.parent.gameObject,iTween.Hash("amount", Vector3.forward * -5,"time", 5f,"islocal",true));
         StartCoroutine(FinishEffect());
     }
 
     IEnumerator FinishEffect()
     {
+        int cnt = 0;
         float totalPlayerHeight = Globals.GetPlateSize() / 2;
         int totalPlate = 0;
         int lastSelectedBoard = 0;
-        iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2)).gameObject,Vector3.forward * -1f,0.3f);
+        iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(0).gameObject,Vector3.forward * -1.5f ,0.3f);
+        int colorNumber = 1;
+
+        finishScoreMultiplierParent.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().material.color = Color.Lerp(gradientColors[colorNumber-1], gradientColors[colorNumber], 0);
         player.transform.position += new Vector3(0,Globals.GetPlateSize(),0) / 2;
-        for(int plate=0; plate<3; plate++)
+        //iTween.MoveBy(player.gameObject,iTween.Hash("amount",new Vector3(0,Globals.GetPlateSize() * collectedPlates,0), "time",0.15f * collectedPlates,"easetype",iTween.EaseType.easeOutSine));
+        iTween.MoveBy(player.gameObject,iTween.Hash("amount",new Vector3(0,Globals.GetPlateSize() * collectedPlates,0), "time", 0.05f * collectedPlates,"easetype",iTween.EaseType.easeOutSine));    
+        while(totalPlate < collectedPlates)
         {
-            for(int i=0; i<collectedPlates[plate]; i++)
+            if(totalPlate * Globals.GetPlateSize() < player.transform.position.y - Globals.GetPlateSize())
             {
-                player.transform.position += new Vector3(0,Globals.GetPlateSize(),0);
+                //iTween.MoveBy(player.gameObject, new Vector3(0,Globals.GetPlateSize(),0), 0.1f);
                 totalPlayerHeight += Globals.GetPlateSize();
 
                 int newBoard = Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2);
                 if(newBoard != lastSelectedBoard)
                 {
-                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1f,0.3f);
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1.5f,0.3f);
                     lastSelectedBoard = newBoard;
-                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1f,0.3f);
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1.5f,0.3f);
+
+                    colorNumber = Mathf.RoundToInt((float)(lastSelectedBoard - (lastSelectedBoard%10)) / 10) + 1;
+                    finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).GetChild(0).GetComponent<MeshRenderer>().material.color = Color.Lerp(gradientColors[colorNumber-1], gradientColors[colorNumber], (float)(lastSelectedBoard%10)/10);
+                }
+
+
+                Vector3 platePos = player.transform.position;
+                platePos.y = totalPlate * Globals.GetPlateSize();
+                GameObject clonePlate = Instantiate(plateObjects[0],platePos,plateObjects[0].transform.rotation);
+                clonePlate.transform.localScale = Vector3.zero;
+                iTween.ScaleTo(clonePlate,Vector3.one * 0.11f, 0.3f);
+
+                totalPlate++;
+            }
+            cnt++;
+            if(cnt > 6)
+            {
+                cnt = 0;
+                
+//yield return new WaitForEndOfFrame();
+            }
+            yield return null;
+        }
+            /*
+            for(int i=0; i<collectedPlates; i++)
+            {
+                //iTween.MoveBy(player.gameObject, new Vector3(0,Globals.GetPlateSize(),0), 0.1f);
+                totalPlayerHeight += Globals.GetPlateSize();
+
+                int newBoard = Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2);
+                if(newBoard != lastSelectedBoard)
+                {
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1.5f,0.3f);
+                    lastSelectedBoard = newBoard;
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1.5f,0.3f);
+
+                    colorNumber = Mathf.RoundToInt((float)(lastSelectedBoard - (lastSelectedBoard%10)) / 10) + 1;
+                    finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).GetChild(0).GetComponent<MeshRenderer>().material.color = Color.Lerp(gradientColors[colorNumber-1], gradientColors[colorNumber], (float)(lastSelectedBoard%10)/10);
+
                 }
 
                 Vector3 platePos = player.transform.position;
                 platePos.y = totalPlate * Globals.GetPlateSize();
-                GameObject clonePlate = Instantiate(plateObjects[plate],platePos,plateObjects[plate].transform.rotation);
-                yield return new WaitForSeconds(0.15f);
+                GameObject clonePlate = Instantiate(plateObjects[0],platePos,plateObjects[0].transform.rotation);
+                yield return new WaitForSeconds(0.14f);
 
                 totalPlate++;
-                
-
             }
+            */
             //player.transform.position += new Vector3(0,Globals.GetPlateSize(),0) / 2;
-        }
     }
+
+
+    void clickPuaseGame()
+    {
+        SceneManager.LoadScene("GameScene",LoadSceneMode.Single);
+    }
+
+
 
 
 }

@@ -12,6 +12,7 @@ public class ObstacleController : MonoBehaviour
 {
     private ObstacleType obstacleType;
     private bool isInitialized = false;
+    private GameObject activeObject;
     void Start()
     {
     
@@ -37,7 +38,8 @@ public class ObstacleController : MonoBehaviour
             case ObstacleType.Mouse:
                 Vector3 mouseDirection = transform.right;
                 if(transform.position.x > 0) mouseDirection = -transform.right;
-                iTween.MoveTo(gameObject,iTween.Hash("position",transform.position + (mouseDirection * 20),"time",1f,"easetype",iTween.EaseType.easeOutQuad,"looptype",iTween.LoopType.pingPong));
+                iTween.MoveTo(gameObject,iTween.Hash("position",transform.position + (mouseDirection * 20),"time",1f,"easetype",iTween.EaseType.easeOutQuad,"looptype",iTween.LoopType.pingPong,"delay",1f,"occomplete","MouseEatAnim","oncompletetarget",gameObject));
+                InvokeRepeating("MouseEatAnim",0f,1f);
                 break;
             case ObstacleType.Slider:
                 Vector3 sliderDirection = transform.position.x < 0 ? transform.right : -transform.right;
@@ -47,6 +49,12 @@ public class ObstacleController : MonoBehaviour
                 iTween.RotateTo(transform.GetChild(3).gameObject,iTween.Hash("rotation",new Vector3(0,0,-90) ,"time",1f,"easetype",iTween.EaseType.easeOutQuad,"looptype",iTween.LoopType.pingPong,"delay",0.5f));
                 break;
         }
+    }
+
+    void MouseEatAnim()
+    {
+        Debug.Log("mouse");
+        activeObject.transform.GetChild(0).GetComponent<Animator>().SetTrigger("Eat");
     }
 
     public void Init(ObstacleType obstacle)
@@ -65,6 +73,7 @@ public class ObstacleController : MonoBehaviour
         {
             bool status = i == (int)obstacleType;
             transform.GetChild(i).gameObject.SetActive(status);
+            if(status) activeObject = transform.GetChild(i).gameObject;
 
         }
     }
