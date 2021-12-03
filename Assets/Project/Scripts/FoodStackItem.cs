@@ -181,6 +181,7 @@ public class FoodStackItem : MonoBehaviour
     {
         isDropped = false;
         isTaken = true;
+        //isMove = true;
         GameSystem.Instance.GetPlayer().AddToStack(foodType, foodLevel);
         iTween.ScaleTo(gameObject,Vector3.zero,0.2f);
         Debug.Log("taken");
@@ -189,6 +190,7 @@ public class FoodStackItem : MonoBehaviour
 
     public void DropEffect(Vector3 dropPos)
     {
+        dropPos.z += 10;
         Vector3 dropSpacing = Globals.GetDropSpacing();
 
         float xVal = Random.Range(-dropSpacing.x, dropSpacing.x);
@@ -204,6 +206,10 @@ public class FoodStackItem : MonoBehaviour
 
     public void DestroyEffect()
     {
+        Transform destroyParticle = transform.GetChild(foodLevel).GetChild(2);
+        destroyParticle.SetParent(null);
+        destroyParticle.GetComponent<ParticleSystem>().Play();
+        
         Destroy(gameObject);
     }
 
@@ -211,7 +217,7 @@ public class FoodStackItem : MonoBehaviour
     {
         transform.GetChild(foodLevel).GetChild(0).gameObject.SetActive(false);
         transform.GetChild(foodLevel).GetChild(1).gameObject.SetActive(true);
-        iTween.MoveTo(gameObject, iTween.Hash("position",transform.position + (Vector3.right * 15),"time",2.0f,"easetype",iTween.EaseType.linear));
+        iTween.MoveTo(gameObject, iTween.Hash("position",transform.position + (Vector3.right * 12),"time",0.8f,"easetype",iTween.EaseType.linear));
         isMove = false;
         //Destroy(gameObject);
     }

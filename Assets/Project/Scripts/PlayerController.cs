@@ -143,14 +143,19 @@ public class PlayerController : MonoBehaviour
     {
         if(col.transform.name.Contains("Finish"))
         {
-            transform.position = new Vector3(0,transform.position.y,transform.position.z); 
-            isFinished = true;
-            GameSystem.Instance.Finish();
-            playerAnimator.SetTrigger("Dance");
-            
-            StartCoroutine(RotateCharacter());
-            //playerModelParent.rotation = Quaternion.Euler(0,-180,0);
+            Invoke("StartFinishEffect",0.5f);
         }
+    }
+
+    void StartFinishEffect()
+    {
+        transform.position = new Vector3(0,transform.position.y,transform.position.z); 
+        isFinished = true;
+        GameSystem.Instance.Finish();
+        playerAnimator.SetTrigger("Dance");
+        
+        StartCoroutine(RotateCharacter());
+        //playerModelParent.rotation = Quaternion.Euler(0,-180,0);
     }
 
     IEnumerator RotateCharacter()
