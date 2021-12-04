@@ -113,8 +113,9 @@ public class FoodStackItem : MonoBehaviour
     {
         if(!isUpgraded && foodLevel < Globals.GetFoodLevelCount()-1)
         {
+            iTween.PunchScale(gameObject,Vector3.one,0.2f);
             isUpgraded = true;
-            Invoke("DelayUpgradeStatus",0.5f);
+            Invoke("DelayUpgradeStatus",0.3f);
             foodLevel++;
             SetLevel(foodLevel);
         }
@@ -215,6 +216,7 @@ public class FoodStackItem : MonoBehaviour
 
     public void FinishEffect()
     {
+        iTween.PunchScale(gameObject,Vector3.one,0.2f);
         transform.GetChild(foodLevel).GetChild(0).gameObject.SetActive(false);
         transform.GetChild(foodLevel).GetChild(1).gameObject.SetActive(true);
         iTween.MoveTo(gameObject, iTween.Hash("position",transform.position + (Vector3.right * 12),"time",0.8f,"easetype",iTween.EaseType.linear));

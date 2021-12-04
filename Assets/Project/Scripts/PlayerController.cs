@@ -145,6 +145,10 @@ public class PlayerController : MonoBehaviour
         {
             Invoke("StartFinishEffect",0.5f);
         }
+        else if(col.transform.name.Contains("Obstacle"))
+        {
+            iTween.MoveBy(gameObject,Vector3.back * 6,0.2f);
+        }
     }
 
     void StartFinishEffect()
