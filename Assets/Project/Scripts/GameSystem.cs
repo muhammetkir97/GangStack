@@ -35,6 +35,7 @@ public class GameSystem : MonoBehaviour
     [SerializeField] private GameObject[] plateObjects;
     [SerializeField] private PlayerController player;
     [SerializeField] private DragZone dragZone;
+    [SerializeField] private CameraFollower cameraFollow;
     
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI txtLevel;
@@ -225,6 +226,8 @@ public class GameSystem : MonoBehaviour
     {
         //iTween.MoveBy(Camera.main.transform.parent.gameObject,iTween.Hash("amount", Vector3.forward * -5,"time", 5f,"islocal",true));
         StartCoroutine(FinishEffect());
+        cameraFollow.ChangePositionOffset(Vector3.down * 4);
+        cameraFollow.ChangeRotationOffset(new Vector3(-10,0,0));
     }
 
     IEnumerator FinishEffect()
@@ -250,9 +253,9 @@ public class GameSystem : MonoBehaviour
                 int newBoard = Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2);
                 if(newBoard != lastSelectedBoard)
                 {
-                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1.5f,0.3f);
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1.7f,0.2f);
                     lastSelectedBoard = newBoard;
-                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1.5f,0.3f);
+                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1.7f,0.2f);
 
                     colorNumber = Mathf.RoundToInt((float)(lastSelectedBoard - (lastSelectedBoard%10)) / 10) + 1;
                     finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).GetChild(0).GetComponent<MeshRenderer>().material.color = Color.Lerp(gradientColors[colorNumber-1], gradientColors[colorNumber], (float)(lastSelectedBoard%10)/10);
@@ -272,37 +275,11 @@ public class GameSystem : MonoBehaviour
             {
                 cnt = 0;
                 
-//yield return new WaitForEndOfFrame();
+            //yield return new WaitForEndOfFrame();
             }
             yield return null;
         }
-            /*
-            for(int i=0; i<collectedPlates; i++)
-            {
-                //iTween.MoveBy(player.gameObject, new Vector3(0,Globals.GetPlateSize(),0), 0.1f);
-                totalPlayerHeight += Globals.GetPlateSize();
 
-                int newBoard = Mathf.RoundToInt((totalPlayerHeight - (totalPlayerHeight % 2f)) / 2);
-                if(newBoard != lastSelectedBoard)
-                {
-                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * 1.5f,0.3f);
-                    lastSelectedBoard = newBoard;
-                    iTween.MoveBy(finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).gameObject,Vector3.forward * -1.5f,0.3f);
-
-                    colorNumber = Mathf.RoundToInt((float)(lastSelectedBoard - (lastSelectedBoard%10)) / 10) + 1;
-                    finishScoreMultiplierParent.transform.GetChild(lastSelectedBoard).GetChild(0).GetComponent<MeshRenderer>().material.color = Color.Lerp(gradientColors[colorNumber-1], gradientColors[colorNumber], (float)(lastSelectedBoard%10)/10);
-
-                }
-
-                Vector3 platePos = player.transform.position;
-                platePos.y = totalPlate * Globals.GetPlateSize();
-                GameObject clonePlate = Instantiate(plateObjects[0],platePos,plateObjects[0].transform.rotation);
-                yield return new WaitForSeconds(0.14f);
-
-                totalPlate++;
-            }
-            */
-            //player.transform.position += new Vector3(0,Globals.GetPlateSize(),0) / 2;
     }
 
 
